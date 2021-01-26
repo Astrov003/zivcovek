@@ -25,21 +25,6 @@ def fb_login():
     input_pass.send_keys(password)
     input_email.send_keys(Keys.ENTER)
 
-def find_date(video_date):
-    print('getting date')
-    try:
-        element = WebDriverWait(driver, 300).until(
-            EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div/div[1]/div[1]/div[3]/div/div/div[1]/div[1]/div/div/div[2]/div/div/div[1]/div/div/div[1]/div[1]/div[2]/div/div[2]/span/span/span[2]/span/a"))
-        )
-        #time.sleep(2)
-        date_p = driver.find_element_by_xpath("/html/body/div[1]/div/div[1]/div[1]/div[3]/div/div/div[1]/div[1]/div/div/div[2]/div/div/div[1]/div/div/div[1]/div[1]/div[2]/div/div[2]/span/span/span[2]/span/a")
-        date_posted = ("date")
-        date_posted = date_p.get_attribute('aria-label')
-        date_posted_edit = date_posted.replace(":",";")
-        return date_posted_edit
-    finally:
-        print('Date: ' + date_posted)
-
 def download_page_1(page_source, HD):
     driver.get('https://downloadfacebook.net/en/facebook-private-video-downloader.html')
     input_source = driver.find_element_by_id('facebook-private-video')
@@ -88,10 +73,10 @@ HD = 2  ### 1 - only HD, Check 3 pages for HD, if none, script goes to the next 
         ### 2 - HD or SD - Check 3 pages for HD, if not, then SD
 
 options = webdriver.FirefoxOptions()
-options.set_headless()
-driver = webdriver.Firefox(service_log_path='logs/geckodriver.log', firefox_options=options) #Open page
+options.headless = True
+driver = webdriver.Firefox(service_log_path='logs/geckodriver.log', options=options) #Open page
 
-print('opening browser...')
+print('accessing Facebook...')
 driver.get('https://www.facebook.com')
 facebook_login = fb_login() #FACEBOOK LOGIN FUNCTION
 time.sleep(5)
@@ -136,7 +121,7 @@ while url:
     if download_url != False: # Get URL
         print('downloading...')
         r = requests.get(download_url)
-        video_name = ("videos/{0} Miran Rubin - {1}.mp4".format(count, date_posted)) # Naming in Loop
+        video_name = ("videos/{0}. Miran Rubin - {1}.mp4".format(count, date_posted)) # Naming in Loop
         open(video_name, 'wb').write(r.content) # Save Video
         print("Done: " + "{0}. Miran Rubin - {1}.mp4".format(count, date_posted))
 
