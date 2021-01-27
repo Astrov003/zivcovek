@@ -13,6 +13,24 @@ import time
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from datetime import date
+import glob
+import re
+
+def numericalSort(value):
+    numbers = re.compile(r'(\d+)')
+    parts = numbers.split(value)
+    parts[1::2] = map(int, parts[1::2])
+    return parts
+
+def count_number():
+    for last_file_published in sorted(glob.glob("D:\\396\\Miran Rubin Video\\published\\*.mp4"), key=numericalSort):
+        if not last_file_published:
+            break
+        last_video_number = last_file_published
+    last_video_number = last_video_number.replace("D:\\396\\Miran Rubin Video\\published\\","")
+    last_count_number = last_video_number[:3]
+    count_number = int(last_count_number) + 1
+    return(count_number)
 
 ### Function: Log in Facebook
 def fb_login():
@@ -85,8 +103,7 @@ time.sleep(5)
 urllist = open("resources/video_list.txt", "r")
 url = urllist.readline()
 
-
-count = 100 # Naming videos in loop
+count = count_number() # function - get last published number + 1
 while url:
 
     url = url.rstrip("\n") # stripping blank space
