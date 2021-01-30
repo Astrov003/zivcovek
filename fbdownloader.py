@@ -16,6 +16,9 @@ from datetime import date
 import glob
 import re
 
+HD = 2  ### 1 - only HD, Check 3 pages for HD, if none, script goes to the next URL
+        ### 2 - HD or SD - Check 3 pages for HD, if not, then SD
+
 def numericalSort(value):
     numbers = re.compile(r'(\d+)')
     parts = numbers.split(value)
@@ -87,9 +90,6 @@ def download_page_2(page_source):
 
 ###================== MAIN =================###
 
-HD = 2  ### 1 - only HD, Check 3 pages for HD, if none, script goes to the next URL
-        ### 2 - HD or SD - Check 3 pages for HD, if not, then SD
-
 options = webdriver.FirefoxOptions()
 options.headless = True
 driver = webdriver.Firefox(service_log_path='logs/geckodriver.log', options=options) #Open page
@@ -142,5 +142,4 @@ while url:
         open(video_name, 'wb').write(r.content) # Save Video
         print("Done: " + "{0}. Miran Rubin - {1}.mp4".format(count, date_posted))
 
-    count += 1 # Increment name index for every loop
     url = urllist.readline()
