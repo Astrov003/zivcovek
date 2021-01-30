@@ -1,5 +1,6 @@
 import os
 
+print('starting script')
 urllist = open("resources/video_list.txt", "r")
 uploading_url = urllist.readline()
 uploading_url = uploading_url.replace('\n', '')
