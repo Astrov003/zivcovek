@@ -11,6 +11,10 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.remote.webelement import WebElement
 import os.path
 
+visibility = 1 ### 1 = PUBLIC; 2 = UNLISTED; 3 or anything else = PRIVATE
+upload_check = 1
+publish_check = 0
+
 JS_DROP_FILES = "var c=arguments,b=c[0],k=c[1];c=c[2];for(var d=b.ownerDocument||document,l=0;;){var e=b.getBoundingClientRect(),g=e.left+(k||e.width/2),h=e.top+(c||e.height/2),f=d.elementFromPoint(g,h);if(f&&b.contains(f))break;if(1<++l)throw b=Error('Element not interactable'),b.code=15,b;b.scrollIntoView({behavior:'instant',block:'center',inline:'center'})}var a=d.createElement('INPUT');a.setAttribute('type','file');a.setAttribute('multiple','');a.setAttribute('style','position:fixed;z-index:2147483647;left:0;top:0;');a.onchange=function(b){a.parentElement.removeChild(a);b.stopPropagation();var c={constructor:DataTransfer,effectAllowed:'all',dropEffect:'none',types:['Files'],files:a.files,setData:function(){},getData:function(){},clearData:function(){},setDragImage:function(){}};window.DataTransferItemList&&(c.items=Object.setPrototypeOf(Array.prototype.map.call(a.files,function(a){return{constructor:DataTransferItem,kind:'file',type:a.type,getAsFile:function(){return a},getAsString:function(b){var c=new FileReader;c.onload=function(a){b(a.target.result)};c.readAsText(a)}}}),{constructor:DataTransferItemList,add:function(){},clear:function(){},remove:function(){}}));['dragenter','dragover','drop'].forEach(function(a){var b=d.createEvent('DragEvent');b.initMouseEvent(a,!0,!0,d.defaultView,0,0,0,g,h,!1,!1,!1,!1,0,null);Object.setPrototypeOf(b,null);b.dataTransfer=c;Object.setPrototypeOf(b,DragEvent.prototype);f.dispatchEvent(b)})};d.documentElement.appendChild(a);a.getBoundingClientRect();return a;"
 
 def drop_files(element, files, offsetX=0, offsetY=0):
@@ -48,15 +52,10 @@ def check_element(xpath):
 user_name = open("resources/google_user.txt", "r").readline()
 password = open("resources/google_pass.txt", "r").readline()
 
-pyautogui.FAILSAFE = False
-
-visibility = 3 ### 1 = PUBLIC
-               ### 2 = UNLISTED
-               ### 3 or anything else = PRIVATE
-
 ###=====MAIN=====###
 
 print('accessing YouTube')
+#driver = webdriver.Chrome(service_log_path='logs/geckodriver.log')
 
 options = webdriver.FirefoxOptions()
 options.headless = True
@@ -78,12 +77,12 @@ driver.find_element_by_name('password').send_keys(password)
 time.sleep(2)
 driver.find_element_by_id('passwordNext').click()
 
+
 time.sleep(5)
 driver.get('https://studio.youtube.com')
 print('Logged in')
 
 for file in sorted(glob.glob("videos\\*.mp4"), key=numericalSort):
-
     if not file:
         break
 
@@ -170,39 +169,42 @@ for file in sorted(glob.glob("videos\\*.mp4"), key=numericalSort):
         time.sleep(2)
 
     ### UPLOAD COMPLETE CHECK
-    driver.implicitly_wait(1)
-    uploads_bar = check_element('/html/body/ytcp-uploads-mini-indicator/ytcp-multi-progress-monitor/paper-dialog/div/button/span')
-    if uploads_bar == True:
-        print('Waiting for upload to finish')
-        upload_complete = False
-        while upload_complete == False:
-            try:
-                element = WebDriverWait(driver, 6000).until(
-                    lambda driver: driver.find_elements(By.XPATH,"//*[text()='Upload complete']") or driver.find_elements(By.XPATH,"//*[text()='Uploads complete']")
-                )
-                upload_complete = True
-                print('Upload done')
-            except:
-                time.sleep(1)
+    if upload_check == 1:
+        driver.implicitly_wait(1)
+        uploads_bar = check_element('/html/body/ytcp-uploads-mini-indicator/ytcp-multi-progress-monitor/paper-dialog/div/button/span')
+        if uploads_bar == True:
+            print('Waiting for upload to finish')
+            upload_complete = False
+            while upload_complete == False:
+                try:
+                    element = WebDriverWait(driver, 6000).until(
+                        lambda driver: driver.find_elements(By.XPATH,"//*[text()='Upload complete']") or driver.find_elements(By.XPATH,"//*[text()='Uploads complete']")
+                    )
+                    upload_complete = True
+                    print('Upload done')
+                except:
+                    time.sleep(1)
+        else:
+            print('done')
     else:
         print('done')
 
-    # driver.get('https://www.youtube.com/channel/UCfHsgrKGFWHYzP5XPbp4jsQ/videos')
-
     ### VIDEO PUBLISH CHECK
-    # print('Waiting until published')
-    # driver.get('https://www.youtube.com/channel/UCfHsgrKGFWHYzP5XPbp4jsQ/videos')
-    # video_published = False
-    # while video_published == False:
-    #     try:
-    #         driver.implicitly_wait(1)
-    #         driver.find_element_by_xpath("//*[contains(text(), '" + video_title + "')]")
-    #         video_published = True
-    #         print('Publish done')
-    #         time.sleep(10)
-    #     except:
-    #         time.sleep(7)
-    #         driver.get('https://www.youtube.com/channel/UCfHsgrKGFWHYzP5XPbp4jsQ/videos')
+    if publish_check == 1:
+        print('Waiting until published')
+        driver.get('https://www.youtube.com/channel/UCfHsgrKGFWHYzP5XPbp4jsQ/videos')
+        video_published = False
+        while video_published == False:
+            try:
+                driver.implicitly_wait(1)
+                driver.find_element_by_xpath("//*[contains(text(), '" + video_title + "')]")
+                video_published = True
+                print('Publish done')
+                time.sleep(10)
+            except:
+                time.sleep(7)
+                driver.get('https://www.youtube.com/channel/UCfHsgrKGFWHYzP5XPbp4jsQ/videos')
+    else:
+        print('done')
 
-    #x = input('press Enter to continue...')
     driver.get('https://studio.youtube.com')
